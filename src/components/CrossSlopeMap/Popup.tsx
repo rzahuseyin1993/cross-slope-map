@@ -43,7 +43,7 @@ const Popup = (props: PopupProps) => {
       dispatch(updateHazardFeature(updateValues));
     } else if (
       selectFeature &&
-      selectFeature.layer.id.includes('cross-slope-')
+      selectFeature.layer.id.includes('cross-slope-symbol-')
     ) {
       const coords = (selectFeature.geometry as any).coordinates;
       const props: any = selectFeature.properties;
@@ -85,15 +85,19 @@ const Popup = (props: PopupProps) => {
       onClose={() => setSelectFeature(null)}
       maxWidth="90%"
     >
-      {selectFeature.layer.id.includes('cross-slope-') && (
+      {selectFeature.layer.id.includes('cross-slope-symbol-') && (
         <Box pad="xsmall" gap="small">
           <Box direction="row" gap="small">
-            <Text>ID:</Text>
-            <Text>{selectFeature.properties?.id}</Text>
+            <Text size="small">ID</Text>
+            <Text size="small" weight="bold">
+              {selectFeature.properties?.id}
+            </Text>
           </Box>
           <Box direction="row" gap="small">
-            <Text>Cross(%):</Text>
-            <Text>{selectFeature.properties?.cross}</Text>
+            <Text size="small">Cross(%)</Text>
+            <Text size="small" weight="bold">
+              {selectFeature.properties?.cross}
+            </Text>
           </Box>
           <Box direction="row" align="center" gap="small">
             <Box direction="row" align="center" gap="xsmall">

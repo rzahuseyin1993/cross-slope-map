@@ -55,7 +55,7 @@ const CrossSlopeMap = () => {
           item => item.properties.id !== selectFeature.properties?.id,
         );
         dispatch(setHazardFeatures(newHazardFeatures));
-      } else if (feature.layer.id.includes('cross-slope-')) {
+      } else if (feature.layer.id.includes('cross-slope-symbol-')) {
         const newCrossSlopeFeatures = crossSlopeFeatures.filter(
           item => item.properties.id !== selectFeature.properties?.id,
         );
@@ -79,7 +79,7 @@ const CrossSlopeMap = () => {
             } as HazardFeature,
           ]),
         );
-      } else if (selectFeature.layer.id.includes('cross-slope-')) {
+      } else if (selectFeature.layer.id.includes('cross-slope-symbol-')) {
         dispatch(
           setCrossSlopeFeatures([
             ...crossSlopeFeatures,
@@ -134,7 +134,8 @@ const CrossSlopeMap = () => {
         const interactiveLayerIds = allLayers
           .filter(
             item =>
-              item.id.includes('cross-slope-') || item.id.includes('hazard-'),
+              item.id.includes('cross-slope-symbol-') ||
+              item.id.includes('hazard-'),
           )
           .map(item => item.id);
         const findFeatures = map.queryRenderedFeatures(event.point, {
@@ -254,7 +255,32 @@ const CrossSlopeMap = () => {
             data={{ type: 'FeatureCollection', features: crossSlopeFeatures }}
           >
             <Layer
-              id="cross-slope-green-layer"
+              id="cross-slope-circle-green-layer"
+              source="cross-slope"
+              filter={[
+                'all',
+                ['>=', ['abs', ['get', 'cross']], 0],
+                ['<=', ['abs', ['get', 'cross']], 2.5],
+              ]}
+              type="circle"
+              paint={{
+                'circle-radius': [
+                  'interpolate',
+                  ['linear'],
+                  ['zoom'],
+                  12,
+                  0.4,
+                  20,
+                  6,
+                ],
+                'circle-color': 'green',
+              }}
+              minzoom={12}
+              maxzoom={19}
+              beforeId="gap-layer-1"
+            />
+            <Layer
+              id="cross-slope-symbol-green-layer"
               source="cross-slope"
               filter={[
                 'all',
@@ -264,23 +290,40 @@ const CrossSlopeMap = () => {
               type="symbol"
               layout={{
                 'icon-image': 'circle-green-icon',
-                'icon-size': [
+                'icon-size': 0.8,
+                'icon-allow-overlap': true,
+                'icon-ignore-placement': true,
+              }}
+              minzoom={19}
+              beforeId="gap-layer-1"
+            />
+            <Layer
+              id="cross-slope-circle-orange-layer"
+              source="cross-slope"
+              filter={[
+                'all',
+                ['>', ['abs', ['get', 'cross']], 2.5],
+                ['<=', ['abs', ['get', 'cross']], 5],
+              ]}
+              type="circle"
+              paint={{
+                'circle-radius': [
                   'interpolate',
                   ['linear'],
                   ['zoom'],
                   12,
-                  0.02,
+                  0.4,
                   20,
-                  0.5,
+                  6,
                 ],
-                'icon-allow-overlap': true,
-                'icon-ignore-placement': true,
+                'circle-color': 'orange',
               }}
               minzoom={12}
+              maxzoom={19}
               beforeId="gap-layer-1"
             />
             <Layer
-              id="cross-slope-orange-layer"
+              id="cross-slope-symbol-orange-layer"
               source="cross-slope"
               filter={[
                 'all',
@@ -290,41 +333,46 @@ const CrossSlopeMap = () => {
               type="symbol"
               layout={{
                 'icon-image': 'circle-orange-icon',
-                'icon-size': [
+                'icon-size': 0.8,
+                'icon-allow-overlap': true,
+                'icon-ignore-placement': true,
+              }}
+              minzoom={19}
+              beforeId="gap-layer-1"
+            />
+            <Layer
+              id="cross-slope-circle-red-layer"
+              source="cross-slope"
+              filter={['>', ['abs', ['get', 'cross']], 5]}
+              type="circle"
+              paint={{
+                'circle-radius': [
                   'interpolate',
                   ['linear'],
                   ['zoom'],
                   12,
-                  0.02,
+                  0.4,
                   20,
-                  0.5,
+                  6,
                 ],
-                'icon-allow-overlap': true,
-                'icon-ignore-placement': true,
+                'circle-color': 'red',
               }}
               minzoom={12}
+              maxzoom={19}
               beforeId="gap-layer-1"
             />
             <Layer
-              id="cross-slope-red-layer"
+              id="cross-slope-symbol-red-layer"
               source="cross-slope"
               filter={['>', ['abs', ['get', 'cross']], 5]}
               type="symbol"
               layout={{
                 'icon-image': 'circle-red-icon',
-                'icon-size': [
-                  'interpolate',
-                  ['linear'],
-                  ['zoom'],
-                  12,
-                  0.02,
-                  20,
-                  0.5,
-                ],
+                'icon-size': 0.8,
                 'icon-allow-overlap': true,
                 'icon-ignore-placement': true,
               }}
-              minzoom={12}
+              minzoom={19}
               beforeId="gap-layer-1"
             />
           </Source>
@@ -413,7 +461,7 @@ const CrossSlopeMap = () => {
                   />
                 </>
               )}
-              {selectFeature.layer.id.includes('cross-slope-') && (
+              {selectFeature.layer.id.includes('cross-slope-symbol-') && (
                 <Layer
                   id="select-anchor-layer"
                   source="select-source"
