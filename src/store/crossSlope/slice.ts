@@ -4,7 +4,7 @@ import { ApiState } from 'types/apiState';
 import { CrossSlopeFeature } from 'types/crossSlope/CrossSlopeFeature';
 import { CrossSlopeState } from 'types/crossSlope/CrossSlopeState';
 
-import { fetchCrossSlopeDataApi } from './api';
+import { fetchCrossSlopeDataApi, updateCrossSlopeDataApi } from './api';
 
 export const initialState: CrossSlopeState = {
   crossSlopeFeatures: [],
@@ -32,6 +32,18 @@ export const fetchCrossSlopeFeatures = createAsyncThunk(
       };
     });
     return results;
+  },
+);
+
+export const updateCrossSlopeFeature = createAsyncThunk(
+  'updateCrossSlopeFeature',
+  async (values: any, { rejectWithValue }) => {
+    try {
+      const response = await updateCrossSlopeDataApi(values);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
   },
 );
 
@@ -65,6 +77,22 @@ export const crossSlopeSlice = createSlice({
     );
     builder.addCase(fetchCrossSlopeFeatures.rejected, (state, action: any) => {
       state.isLoading = false;
+      state.status = ApiState.rejected;
+      state.error = action.error;
+    });
+
+    // update cross slope Feature
+
+    builder.addCase(updateCrossSlopeFeature.pending, state => {
+      state.service = 'updateCrossSlopeFeature';
+      state.status = ApiState.pending;
+      state.error = undefined;
+    });
+    builder.addCase(updateCrossSlopeFeature.fulfilled, state => {
+      state.status = ApiState.fulfilled;
+      state.error = undefined;
+    });
+    builder.addCase(updateCrossSlopeFeature.rejected, (state, action: any) => {
       state.status = ApiState.rejected;
       state.error = action.error;
     });

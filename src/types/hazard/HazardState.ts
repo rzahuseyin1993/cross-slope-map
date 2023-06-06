@@ -4,7 +4,6 @@ import { HazardFeature } from './HazardFeature';
 
 export type HazardState = {
   hazardFeatures: HazardFeature[];
-  selectHazardFeature: HazardFeature | null;
   isLoading: boolean;
   service: string | undefined;
   status: ApiState;

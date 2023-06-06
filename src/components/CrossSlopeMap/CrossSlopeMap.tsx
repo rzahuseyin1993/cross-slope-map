@@ -8,73 +8,104 @@ import ReactMapGL, {
   MapRef,
   NavigationControl,
   MapLayerMouseEvent,
+  MapboxGeoJSONFeature,
 } from 'react-map-gl';
 import * as turf from '@turf/turf';
 
 import { MAPBOX_ACCESS_TOKEN } from 'consts';
 import { HazardFeature } from 'types/hazard/HazardFeature';
+import { CrossSlopeFeature } from 'types/crossSlope/CrossSlopeFeature';
 import {
   crossSlopeSelector,
   fetchCrossSlopeFeatures,
+  setCrossSlopeFeatures,
 } from 'store/crossSlope/slice';
 import {
   fetchHazardFeatures,
   hazardSelector,
   setHazardFeatures,
-  setSelectHazardFeature,
 } from 'store/hazard/slice';
 import { mapIcons } from 'consts';
 import Legend from './Legend';
-import { HoverInfo } from './types';
-import HazardPopup from './HazardPopup';
+import Popup from './Popup';
 
 const CrossSlopeMap = () => {
   const dispatch = useDispatch<any>();
   const { crossSlopeFeatures, isLoading } = useSelector(crossSlopeSelector);
-  const { hazardFeatures, selectHazardFeature } = useSelector(hazardSelector);
+  const { hazardFeatures } = useSelector(hazardSelector);
   const [isLegendVisible, setIsLegendVisible] = useState<boolean>(false);
 
   const mapRef = useRef<MapRef>(null);
   const [mapCursor, setMapCursor] = useState<string>('');
-  const [hoverInfo, setHoverInfo] = useState<HoverInfo | null>(null);
 
   const [isMouseDownClicked, setIsMouseDownClicked] = useState<boolean>(false);
+  const [selectFeature, setSelectFeature] =
+    useState<MapboxGeoJSONFeature | null>(null);
 
   const handleMapMouseDown = (event: MapLayerMouseEvent) => {
     const feature = findFeature(event);
     if (
       feature &&
-      selectHazardFeature &&
-      feature.properties.id === selectHazardFeature.properties.id
+      selectFeature &&
+      feature.properties?.id === selectFeature.properties?.id
     ) {
       setIsMouseDownClicked(true);
-      const newHazardFeatures = hazardFeatures.filter(
-        item => item.properties.id !== selectHazardFeature.properties.id,
-      );
-      dispatch(setHazardFeatures(newHazardFeatures));
+      if (feature.layer.id.includes('hazard-')) {
+        const newHazardFeatures = hazardFeatures.filter(
+          item => item.properties.id !== selectFeature.properties?.id,
+        );
+        dispatch(setHazardFeatures(newHazardFeatures));
+      } else if (feature.layer.id.includes('cross-slope-')) {
+        const newCrossSlopeFeatures = crossSlopeFeatures.filter(
+          item => item.properties.id !== selectFeature.properties?.id,
+        );
+        dispatch(setCrossSlopeFeatures(newCrossSlopeFeatures));
+      }
+      setSelectFeature(feature);
     }
   };
 
   const handleMapMouseUp = () => {
     setIsMouseDownClicked(false);
-    if (selectHazardFeature) {
-      dispatch(setHazardFeatures([...hazardFeatures, selectHazardFeature]));
-      dispatch(setSelectHazardFeature(null));
+    if (selectFeature) {
+      if (selectFeature.layer.id.includes('hazard-')) {
+        dispatch(
+          setHazardFeatures([
+            ...hazardFeatures,
+            {
+              type: 'Feature',
+              geometry: selectFeature.geometry,
+              properties: selectFeature.properties,
+            } as HazardFeature,
+          ]),
+        );
+      } else if (selectFeature.layer.id.includes('cross-slope-')) {
+        dispatch(
+          setCrossSlopeFeatures([
+            ...crossSlopeFeatures,
+            {
+              type: 'Feature',
+              geometry: selectFeature.geometry,
+              properties: selectFeature.properties,
+            } as CrossSlopeFeature,
+          ]),
+        );
+      }
+      // setSelectFeature(null);
     }
   };
 
   const handleMapMouseMove = (event: MapLayerMouseEvent) => {
-    if (isMouseDownClicked && selectHazardFeature) {
-      if (hoverInfo) setHoverInfo(null);
+    if (isMouseDownClicked && selectFeature) {
       const mousePoint: [number, number] = [event.lngLat.lng, event.lngLat.lat];
       const newSelectFeature = {
-        ...selectHazardFeature,
+        ...selectFeature,
         geometry: {
-          ...selectHazardFeature.geometry,
+          ...selectFeature.geometry,
           coordinates: mousePoint,
         },
-      };
-      dispatch(setSelectHazardFeature(newSelectFeature));
+      } as MapboxGeoJSONFeature;
+      setSelectFeature(newSelectFeature);
     } else {
       const feature = findFeature(event);
       if (feature) {
@@ -88,15 +119,9 @@ const CrossSlopeMap = () => {
   const handleMapClick = (event: MapLayerMouseEvent) => {
     const feature = findFeature(event);
     if (feature) {
-      setHoverInfo(null);
+      setSelectFeature(null);
       setTimeout(() => {
-        dispatch(setSelectHazardFeature(feature));
-        const coords = (feature.geometry as any).coordinates;
-        setHoverInfo({
-          ...feature.properties,
-          longitude: coords[0],
-          latitude: coords[1],
-        } as HoverInfo);
+        setSelectFeature(feature);
       }, 300);
     }
   };
@@ -107,18 +132,17 @@ const CrossSlopeMap = () => {
       const allLayers = map.getStyle().layers;
       if (allLayers) {
         const interactiveLayerIds = allLayers
-          .filter(item => item.id.includes('hazard-'))
+          .filter(
+            item =>
+              item.id.includes('cross-slope-') || item.id.includes('hazard-'),
+          )
           .map(item => item.id);
-        let findFeatures = map.queryRenderedFeatures(event.point, {
+        const findFeatures = map.queryRenderedFeatures(event.point, {
           layers: interactiveLayerIds,
         });
         if (findFeatures && findFeatures.length > 0) {
           const feature = findFeatures[0];
-          return {
-            type: feature.type,
-            geometry: feature.geometry,
-            properties: feature.properties,
-          } as HazardFeature;
+          return feature;
         }
       }
     }
@@ -192,7 +216,6 @@ const CrossSlopeMap = () => {
           style={{ width: '100%', height: '100%' }}
           mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
           mapStyle="mapbox://styles/mapbox/satellite-streets-v12"
-          // mapStyle="mapbox://styles/mapbox/streets-v12"
           projection="globe"
           maxZoom={20}
           attributionControl={false}
@@ -238,18 +261,20 @@ const CrossSlopeMap = () => {
                 ['>=', ['abs', ['get', 'cross']], 0],
                 ['<=', ['abs', ['get', 'cross']], 2.5],
               ]}
-              type="circle"
-              paint={{
-                'circle-radius': [
+              type="symbol"
+              layout={{
+                'icon-image': 'circle-green-icon',
+                'icon-size': [
                   'interpolate',
                   ['linear'],
                   ['zoom'],
                   12,
-                  0.1,
-                  19,
-                  6,
+                  0.02,
+                  20,
+                  0.5,
                 ],
-                'circle-color': 'green',
+                'icon-allow-overlap': true,
+                'icon-ignore-placement': true,
               }}
               minzoom={12}
               beforeId="gap-layer-1"
@@ -262,18 +287,20 @@ const CrossSlopeMap = () => {
                 ['>', ['abs', ['get', 'cross']], 2.5],
                 ['<=', ['abs', ['get', 'cross']], 5],
               ]}
-              type="circle"
-              paint={{
-                'circle-radius': [
+              type="symbol"
+              layout={{
+                'icon-image': 'circle-orange-icon',
+                'icon-size': [
                   'interpolate',
                   ['linear'],
                   ['zoom'],
                   12,
-                  0.1,
-                  19,
-                  6,
+                  0.02,
+                  20,
+                  0.5,
                 ],
-                'circle-color': 'orange',
+                'icon-allow-overlap': true,
+                'icon-ignore-placement': true,
               }}
               minzoom={12}
               beforeId="gap-layer-1"
@@ -282,18 +309,20 @@ const CrossSlopeMap = () => {
               id="cross-slope-red-layer"
               source="cross-slope"
               filter={['>', ['abs', ['get', 'cross']], 5]}
-              type="circle"
-              paint={{
-                'circle-radius': [
+              type="symbol"
+              layout={{
+                'icon-image': 'circle-red-icon',
+                'icon-size': [
                   'interpolate',
                   ['linear'],
                   ['zoom'],
                   12,
-                  0.1,
-                  19,
-                  6,
+                  0.02,
+                  20,
+                  0.5,
                 ],
-                'circle-color': 'red',
+                'icon-allow-overlap': true,
+                'icon-ignore-placement': true,
               }}
               minzoom={12}
               beforeId="gap-layer-1"
@@ -304,85 +333,107 @@ const CrossSlopeMap = () => {
             type="geojson"
             data={{ type: 'FeatureCollection', features: hazardFeatures }}
           >
-            {mapIcons.map(item => (
-              <Layer
-                key={`hazard-${item.id}-layer`}
-                id={`hazard-${item.id}-layer`}
-                source="hazard"
-                filter={[
-                  'all',
-                  ['==', 'category', item.category],
-                  // ['!=', 'id', selectHazardFeature?.properties.id ?? ''],
-                ]}
-                type="symbol"
-                layout={{
-                  'icon-image': item.id,
-                  'icon-size': [
-                    'interpolate',
-                    ['linear'],
-                    ['zoom'],
-                    12,
-                    0.4,
-                    19,
-                    1,
-                  ],
-                  'icon-anchor': 'bottom',
-                  'icon-allow-overlap': true,
-                  'icon-ignore-placement': true,
-                }}
-                minzoom={12}
-                beforeId="gap-layer-2"
-              />
-            ))}
+            {mapIcons
+              .filter(item => item.id.includes('marker-'))
+              .map(item => (
+                <Layer
+                  key={`hazard-${item.id}-layer`}
+                  id={`hazard-${item.id}-layer`}
+                  source="hazard"
+                  filter={['==', 'category', item.category]}
+                  type="symbol"
+                  layout={{
+                    'icon-image': item.id,
+                    'icon-size': [
+                      'interpolate',
+                      ['linear'],
+                      ['zoom'],
+                      12,
+                      0.4,
+                      20,
+                      1,
+                    ],
+                    'icon-anchor': 'bottom',
+                    'icon-allow-overlap': true,
+                    'icon-ignore-placement': true,
+                  }}
+                  minzoom={12}
+                  beforeId="gap-layer-2"
+                />
+              ))}
           </Source>
-          {selectHazardFeature && (
+          {selectFeature && (
             <Source
-              id="hazard-select"
+              id="select-source"
               type="geojson"
-              data={selectHazardFeature}
+              data={{
+                type: 'Feature',
+                geometry: selectFeature.geometry,
+                properties: selectFeature.properties,
+              }}
             >
-              <Layer
-                key={`hazard-select-layer`}
-                id={`hazard-select-layer`}
-                source="hazard-select"
-                type="symbol"
-                layout={{
-                  'icon-image': mapIcons.find(
-                    item =>
-                      item.category === selectHazardFeature.properties.category,
-                  )?.id,
-                  'icon-size': [
-                    'interpolate',
-                    ['linear'],
-                    ['zoom'],
-                    12,
-                    0.4,
-                    19,
-                    1,
-                  ],
-                  'icon-anchor': 'bottom',
-                  'icon-allow-overlap': true,
-                  'icon-ignore-placement': true,
-                }}
-                minzoom={12}
-                beforeId="gap-layer-2"
-              />
-              <Layer
-                id="hazard-select-anchor-layer"
-                source="hazard-select"
-                type="circle"
-                paint={{
-                  'circle-radius': 2,
-                  'circle-color': 'cyan',
-                }}
-                minzoom={12}
-                beforeId="gap-layer-2"
-              />
+              {selectFeature.layer.id.includes('hazard-') && (
+                <>
+                  <Layer
+                    key={`hazard-select-layer`}
+                    id={`hazard-select-layer`}
+                    source="select-source"
+                    type="symbol"
+                    layout={{
+                      'icon-image': mapIcons.find(
+                        item =>
+                          item.category === selectFeature.properties?.category,
+                      )?.id,
+                      'icon-size': [
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        12,
+                        0.4,
+                        20,
+                        1,
+                      ],
+                      'icon-anchor': 'bottom',
+                      'icon-allow-overlap': true,
+                      'icon-ignore-placement': true,
+                    }}
+                    minzoom={12}
+                    beforeId="gap-layer-2"
+                  />
+                  <Layer
+                    id="select-anchor-layer"
+                    source="select-source"
+                    type="circle"
+                    paint={{
+                      'circle-radius': 2,
+                      'circle-color': 'cyan',
+                    }}
+                    minzoom={12}
+                    beforeId="gap-layer-2"
+                  />
+                </>
+              )}
+              {selectFeature.layer.id.includes('cross-slope-') && (
+                <Layer
+                  id="select-anchor-layer"
+                  source="select-source"
+                  type="circle"
+                  paint={{
+                    'circle-radius': 6,
+                    'circle-color': 'cyan',
+                  }}
+                  minzoom={12}
+                  beforeId="gap-layer-2"
+                />
+              )}
             </Source>
           )}
           <NavigationControl position="top-right" />
-          {hoverInfo && (
-            <HazardPopup hoverInfo={hoverInfo} setHoverInfo={setHoverInfo} />
+          {selectFeature && (
+            <Popup
+              selectFeature={selectFeature}
+              setSelectFeature={setSelectFeature}
+            />
           )}
         </ReactMapGL>
       </Box>

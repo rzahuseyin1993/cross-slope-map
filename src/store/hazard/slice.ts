@@ -8,7 +8,6 @@ import { fetchHazardDataApi, updateHazardDataApi } from './api';
 
 export const initialState: HazardState = {
   hazardFeatures: [],
-  selectHazardFeature: null,
   service: undefined,
   status: ApiState.idle,
   isLoading: false,
@@ -65,12 +64,6 @@ export const hazardSlice = createSlice({
     setHazardFeatures: (state, action: PayloadAction<HazardFeature[]>) => {
       state.hazardFeatures = action.payload;
     },
-    setSelectHazardFeature: (
-      state,
-      action: PayloadAction<HazardFeature | null>,
-    ) => {
-      state.selectHazardFeature = action.payload;
-    },
   },
   extraReducers: builder => {
     // fetch hazardFeatures
@@ -114,8 +107,7 @@ export const hazardSlice = createSlice({
   },
 });
 
-export const { setHazardFeatures, setSelectHazardFeature } =
-  hazardSlice.actions;
+export const { setHazardFeatures } = hazardSlice.actions;
 
 export const hazardSelector = (state: RootState) =>
   state?.hazard ?? initialState;
