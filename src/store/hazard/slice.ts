@@ -1,13 +1,22 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from 'types';
 import { ApiState } from 'types/apiState';
+import { HazardCategory } from 'types/hazard/HazardCategories';
 import { HazardFeature } from 'types/hazard/HazardFeature';
 import { HazardState } from 'types/hazard/HazardState';
+import { HazardType } from 'types/hazard/HazardType';
 
-import { fetchHazardDataApi, updateHazardDataApi } from './api';
+import {
+  fetchHazardDataApi,
+  fetchHazardTypesApi,
+  fetchHazardCategoriesApi,
+  updateHazardDataApi,
+} from './api';
 
 export const initialState: HazardState = {
   hazardFeatures: [],
+  hazardCategories: [],
+  hazardTypes: [],
   service: undefined,
   status: ApiState.idle,
   isLoading: false,
@@ -39,6 +48,36 @@ export const fetchHazardFeatures = createAsyncThunk(
               ? item['AttachmentDetails'][0]['Url']
               : null,
         },
+      };
+    });
+    return results;
+  },
+);
+
+export const fetchHazardCategories = createAsyncThunk(
+  'fetchHazardCategories',
+  async () => {
+    const response = await fetchHazardCategoriesApi();
+    const items = (response as any).ReturnModel.Items;
+    const results = items.map((item: any) => {
+      return {
+        Id: item.Id,
+        Name: item.Name,
+      };
+    });
+    return results;
+  },
+);
+
+export const fetchHazardTypes = createAsyncThunk(
+  'fetchHazardTypes',
+  async () => {
+    const response = await fetchHazardTypesApi();
+    const items = (response as any).ReturnModel.Items;
+    const results = items.map((item: any) => {
+      return {
+        Id: item.Id,
+        Name: item.Name,
       };
     });
     return results;
@@ -85,6 +124,46 @@ export const hazardSlice = createSlice({
     );
     builder.addCase(fetchHazardFeatures.rejected, (state, action: any) => {
       state.isLoading = false;
+      state.status = ApiState.rejected;
+      state.error = action.error;
+    });
+
+    // fetch hazard categories
+    builder.addCase(fetchHazardCategories.pending, state => {
+      state.hazardFeatures = [];
+      state.service = 'fetchHazardCategories';
+      state.status = ApiState.pending;
+      state.error = undefined;
+    });
+    builder.addCase(
+      fetchHazardCategories.fulfilled,
+      (state, action: PayloadAction<HazardCategory[]>) => {
+        state.hazardCategories = action.payload;
+        state.status = ApiState.fulfilled;
+        state.error = undefined;
+      },
+    );
+    builder.addCase(fetchHazardCategories.rejected, (state, action: any) => {
+      state.status = ApiState.rejected;
+      state.error = action.error;
+    });
+
+    // fetch hazard types
+    builder.addCase(fetchHazardCategories.pending, state => {
+      state.hazardFeatures = [];
+      state.service = 'fetchHazardTypes';
+      state.status = ApiState.pending;
+      state.error = undefined;
+    });
+    builder.addCase(
+      fetchHazardCategories.fulfilled,
+      (state, action: PayloadAction<HazardType[]>) => {
+        state.hazardTypes = action.payload;
+        state.status = ApiState.fulfilled;
+        state.error = undefined;
+      },
+    );
+    builder.addCase(fetchHazardCategories.rejected, (state, action: any) => {
       state.status = ApiState.rejected;
       state.error = action.error;
     });

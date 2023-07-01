@@ -9,3 +9,7 @@ export const updateHazardDataApi = (payload?: any) => {
   }
   return http.put(`/Hazard`, formdata);
 };
+
+export const fetchHazardTypesApi = () => http.get(`/HazardType`);
+
+export const fetchHazardCategoriesApi = () => http.get(`/Category`);
