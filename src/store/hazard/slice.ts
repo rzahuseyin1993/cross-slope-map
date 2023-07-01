@@ -149,21 +149,21 @@ export const hazardSlice = createSlice({
     });
 
     // fetch hazard types
-    builder.addCase(fetchHazardCategories.pending, state => {
+    builder.addCase(fetchHazardTypes.pending, state => {
       state.hazardFeatures = [];
       state.service = 'fetchHazardTypes';
       state.status = ApiState.pending;
       state.error = undefined;
     });
     builder.addCase(
-      fetchHazardCategories.fulfilled,
+      fetchHazardTypes.fulfilled,
       (state, action: PayloadAction<HazardType[]>) => {
         state.hazardTypes = action.payload;
         state.status = ApiState.fulfilled;
         state.error = undefined;
       },
     );
-    builder.addCase(fetchHazardCategories.rejected, (state, action: any) => {
+    builder.addCase(fetchHazardTypes.rejected, (state, action: any) => {
       state.status = ApiState.rejected;
       state.error = action.error;
     });

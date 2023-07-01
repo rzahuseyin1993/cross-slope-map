@@ -3,6 +3,7 @@ import markerOrangeIcon from 'assets/icons/markers/orange.png';
 import markerYellowIcon from 'assets/icons/markers/yellow.png';
 import markerGreyIcon from 'assets/icons/markers/grey.png';
 import markerBlueIcon from 'assets/icons/markers/blue.png';
+import markerPurpleIcon from 'assets/icons/markers/purple.png';
 
 import circleGreenIcon from 'assets/icons/circles/green.png';
 import circleOrangeIcon from 'assets/icons/circles/orange.png';
@@ -23,6 +24,7 @@ export const mapIcons = [
   },
   { id: 'marker-grey-icon', url: markerGreyIcon, category: 'Distress' },
   { id: 'marker-blue-icon', url: markerBlueIcon, category: 'Curb Ramps' },
+  { id: 'marker-purple-icon', url: markerPurpleIcon, category: 'Driveway' },
   {
     id: 'circle-green-icon',
     url: circleGreenIcon,
