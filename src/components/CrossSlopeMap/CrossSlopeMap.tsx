@@ -11,7 +11,10 @@ import ReactMapGL, {
   MapboxGeoJSONFeature,
 } from 'react-map-gl';
 import * as turf from '@turf/turf';
+import { Feature, Point } from 'geojson';
+import { mdiMapMarkerPlus } from '@mdi/js';
 
+import Icon from 'components/Icon';
 import { MAPBOX_ACCESS_TOKEN } from 'consts';
 import { HazardFeature } from 'types/hazard/HazardFeature';
 import { CrossSlopeFeature } from 'types/crossSlope/CrossSlopeFeature';
@@ -28,6 +31,7 @@ import {
 import { mapIcons } from 'consts';
 import Legend from './Legend';
 import Popup from './Popup';
+import EditDialog from './EditDialog';
 
 const CrossSlopeMap = () => {
   const dispatch = useDispatch<any>();
@@ -41,8 +45,17 @@ const CrossSlopeMap = () => {
   const [isMouseDownClicked, setIsMouseDownClicked] = useState<boolean>(false);
   const [selectFeature, setSelectFeature] =
     useState<MapboxGeoJSONFeature | null>(null);
+  const [createToggle, setCreateToggle] = useState<boolean>(false);
+  const [createHazardFeature, setCreateHazardFeature] =
+    useState<Feature<Point> | null>(null);
+
+  const handleEditDialogClose = () => {
+    setCreateToggle(false);
+    setCreateHazardFeature(null);
+  };
 
   const handleMapMouseDown = (event: MapLayerMouseEvent) => {
+    if (createToggle) return;
     const feature = findFeature(event);
     if (
       feature &&
@@ -50,7 +63,7 @@ const CrossSlopeMap = () => {
       feature.properties?.id === selectFeature.properties?.id
     ) {
       setIsMouseDownClicked(true);
-      if (feature.layer.id.includes('hazard-')) {
+      if (feature.layer.id.includes('hazard-marker-')) {
         const newHazardFeatures = hazardFeatures.filter(
           item => item.properties.id !== selectFeature.properties?.id,
         );
@@ -66,6 +79,7 @@ const CrossSlopeMap = () => {
   };
 
   const handleMapMouseUp = () => {
+    if (createToggle) return;
     setIsMouseDownClicked(false);
     if (selectFeature) {
       if (selectFeature.layer.id.includes('hazard-')) {
@@ -96,33 +110,54 @@ const CrossSlopeMap = () => {
   };
 
   const handleMapMouseMove = (event: MapLayerMouseEvent) => {
-    if (isMouseDownClicked && selectFeature) {
-      const mousePoint: [number, number] = [event.lngLat.lng, event.lngLat.lat];
-      const newSelectFeature = {
-        ...selectFeature,
-        geometry: {
-          ...selectFeature.geometry,
-          coordinates: mousePoint,
-        },
-      } as MapboxGeoJSONFeature;
-      setSelectFeature(newSelectFeature);
+    if (createToggle) {
+      setMapCursor('crosshair');
     } else {
-      const feature = findFeature(event);
-      if (feature) {
-        setMapCursor('pointer');
+      if (isMouseDownClicked && selectFeature) {
+        const mousePoint: [number, number] = [
+          event.lngLat.lng,
+          event.lngLat.lat,
+        ];
+        const newSelectFeature = {
+          ...selectFeature,
+          geometry: {
+            ...selectFeature.geometry,
+            coordinates: mousePoint,
+          },
+        } as MapboxGeoJSONFeature;
+        setSelectFeature(newSelectFeature);
       } else {
-        setMapCursor('');
+        const feature = findFeature(event);
+        if (feature) {
+          setMapCursor('pointer');
+        } else {
+          setMapCursor('');
+        }
       }
     }
   };
 
   const handleMapClick = (event: MapLayerMouseEvent) => {
-    const feature = findFeature(event);
-    if (feature) {
-      setSelectFeature(null);
-      setTimeout(() => {
-        setSelectFeature(feature);
-      }, 300);
+    if (createToggle) {
+      // event.lngLat
+      setCreateHazardFeature({
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: [event.lngLat.lng, event.lngLat.lat],
+        },
+        properties: {
+          category: 'Driveway',
+        },
+      });
+    } else {
+      const feature = findFeature(event);
+      if (feature) {
+        setSelectFeature(null);
+        setTimeout(() => {
+          setSelectFeature(feature);
+        }, 300);
+      }
     }
   };
 
@@ -476,6 +511,40 @@ const CrossSlopeMap = () => {
               )}
             </Source>
           )}
+          {createHazardFeature && (
+            <Source
+              id="create-hazard-source"
+              type="geojson"
+              data={createHazardFeature}
+            >
+              <Layer
+                id={`hazard-create-layer`}
+                source="select-source"
+                type="symbol"
+                layout={{
+                  'icon-image': mapIcons.find(
+                    item =>
+                      item.category ===
+                      createHazardFeature.properties?.category,
+                  )?.id,
+                  'icon-size': [
+                    'interpolate',
+                    ['linear'],
+                    ['zoom'],
+                    12,
+                    0.4,
+                    20,
+                    1,
+                  ],
+                  'icon-anchor': 'bottom',
+                  'icon-allow-overlap': true,
+                  'icon-ignore-placement': true,
+                }}
+                // minzoom={12}
+                beforeId="gap-layer-2"
+              />
+            </Source>
+          )}
           <NavigationControl position="top-right" />
           {selectFeature && (
             <Popup
@@ -485,7 +554,25 @@ const CrossSlopeMap = () => {
           )}
         </ReactMapGL>
       </Box>
+      {isLegendVisible && (
+        <Box
+          pad="xsmall"
+          round="xsmall"
+          elevation="small"
+          background={createToggle ? 'accent-4' : 'light-1'}
+          style={{ position: 'absolute', right: 10, top: 120, zIndex: 9 }}
+          onClick={() => setCreateToggle(!createToggle)}
+        >
+          <Icon path={mdiMapMarkerPlus} color="purple" />
+        </Box>
+      )}
       {isLegendVisible && <Legend />}
+      {createHazardFeature && (
+        <EditDialog
+          coords={createHazardFeature.geometry.coordinates as [number, number]}
+          onClose={handleEditDialogClose}
+        />
+      )}
     </Box>
   );
 };

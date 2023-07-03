@@ -10,6 +10,7 @@ import {
   fetchHazardDataApi,
   fetchHazardTypesApi,
   fetchHazardCategoriesApi,
+  createHazardDataApi,
   updateHazardDataApi,
 } from './api';
 
@@ -58,11 +59,11 @@ export const fetchHazardCategories = createAsyncThunk(
   'fetchHazardCategories',
   async () => {
     const response = await fetchHazardCategoriesApi();
-    const items = (response as any).ReturnModel.Items;
+    const items = response.data.ReturnModel.Items;
     const results = items.map((item: any) => {
       return {
-        Id: item.Id,
-        Name: item.Name,
+        id: item.Id,
+        name: item.Name,
       };
     });
     return results;
@@ -73,14 +74,27 @@ export const fetchHazardTypes = createAsyncThunk(
   'fetchHazardTypes',
   async () => {
     const response = await fetchHazardTypesApi();
-    const items = (response as any).ReturnModel.Items;
+    const items = response.data.ReturnModel.Items;
     const results = items.map((item: any) => {
       return {
-        Id: item.Id,
-        Name: item.Name,
+        id: item.Id,
+        name: item.Name,
       };
     });
     return results;
+  },
+);
+
+export const createHazardFeature = createAsyncThunk(
+  'createHazardFeature',
+  async (values: any, { rejectWithValue }) => {
+    try {
+      const response = await createHazardDataApi(values);
+      // change data structure
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
   },
 );
 
@@ -89,6 +103,7 @@ export const updateHazardFeature = createAsyncThunk(
   async (values: any, { rejectWithValue }) => {
     try {
       const response = await updateHazardDataApi(values);
+      // change data structure
       return response.data;
     } catch (error) {
       return rejectWithValue(error);
@@ -130,7 +145,7 @@ export const hazardSlice = createSlice({
 
     // fetch hazard categories
     builder.addCase(fetchHazardCategories.pending, state => {
-      state.hazardFeatures = [];
+      state.hazardCategories = [];
       state.service = 'fetchHazardCategories';
       state.status = ApiState.pending;
       state.error = undefined;
@@ -150,7 +165,7 @@ export const hazardSlice = createSlice({
 
     // fetch hazard types
     builder.addCase(fetchHazardTypes.pending, state => {
-      state.hazardFeatures = [];
+      state.hazardTypes = [];
       state.service = 'fetchHazardTypes';
       state.status = ApiState.pending;
       state.error = undefined;
@@ -168,6 +183,27 @@ export const hazardSlice = createSlice({
       state.error = action.error;
     });
 
+    // create hazard Feature
+
+    builder.addCase(createHazardFeature.pending, state => {
+      state.service = 'createHazardFeature';
+      state.status = ApiState.pending;
+      state.error = undefined;
+    });
+    builder.addCase(
+      createHazardFeature.fulfilled,
+      (state, action: PayloadAction<HazardFeature>) => {
+        console.log(action.payload);
+        // state.hazardFeatures = [...state.hazardFeatures, action.payload];
+        state.status = ApiState.fulfilled;
+        state.error = undefined;
+      },
+    );
+    builder.addCase(createHazardFeature.rejected, (state, action: any) => {
+      state.status = ApiState.rejected;
+      state.error = action.error;
+    });
+
     // update hazard Feature
 
     builder.addCase(updateHazardFeature.pending, state => {
@@ -176,6 +212,7 @@ export const hazardSlice = createSlice({
       state.error = undefined;
     });
     builder.addCase(updateHazardFeature.fulfilled, state => {
+      // state.hazardFeatures
       state.status = ApiState.fulfilled;
       state.error = undefined;
     });
