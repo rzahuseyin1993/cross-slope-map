@@ -18,6 +18,8 @@ export const updateHazardDataApi = (payload?: any) => {
   return http.put(`/Hazard`, formdata);
 };
 
-export const fetchHazardTypesApi = () => http.get(`/HazardType`);
+export const fetchHazardTypesApi = () =>
+  http.get(`/HazardType?DisablePagination=true`);
 
-export const fetchHazardCategoriesApi = () => http.get(`/Category`);
+export const fetchHazardCategoriesApi = () =>
+  http.get(`/Category?DisablePagination=true`);

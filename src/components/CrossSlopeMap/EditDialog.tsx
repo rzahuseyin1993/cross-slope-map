@@ -14,7 +14,6 @@ import {
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import {
-  fetchHazardFeatures,
   createHazardFeature,
   fetchHazardCategories,
   fetchHazardTypes,
@@ -61,7 +60,6 @@ const EditDialog = (props: EditDialogProps) => {
 
   useEffect(() => {
     if (service === 'createHazardFeature' && status === ApiState.fulfilled) {
-      dispatch(fetchHazardFeatures());
       onClose();
     }
   }, [service, status]);
@@ -109,7 +107,9 @@ const EditDialog = (props: EditDialogProps) => {
               >
                 <Select
                   name="category"
-                  options={hazardCategories}
+                  options={hazardCategories.filter(
+                    item => item.name === 'Drive way',
+                  )}
                   placeholder="Select category"
                   labelKey="name"
                   valueKey="id"
@@ -124,7 +124,10 @@ const EditDialog = (props: EditDialogProps) => {
               >
                 <Select
                   name="hazard_type"
-                  options={hazardTypes}
+                  options={hazardTypes.filter(
+                    item =>
+                      item.name === 'Commercial' || item.name === 'Residential',
+                  )}
                   placeholder="Select hazard type"
                   labelKey="name"
                   valueKey="id"

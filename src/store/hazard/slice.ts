@@ -90,8 +90,28 @@ export const createHazardFeature = createAsyncThunk(
   async (values: any, { rejectWithValue }) => {
     try {
       const response = await createHazardDataApi(values);
-      // change data structure
-      return response.data;
+      const data = response.data;
+      return {
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: [Number(data['Longitude']), Number(data['Latitude'])],
+        },
+        properties: {
+          id: data['Id'],
+          categoryId: data['Category']['Id'],
+          category: data['Category']['Name'],
+          hazardTypeId: data['HazardType']['Id'],
+          hazardType: data['HazardType']['Name'],
+          gpsTime: data['GPSTime'],
+          comment: data['Comment'],
+          photoUrl: data['PhotoUrl'],
+          pdfUrl:
+            data['AttachmentDetails'] && data['AttachmentDetails'].length > 0
+              ? data['AttachmentDetails'][0]['Url']
+              : null,
+        },
+      };
     } catch (error) {
       return rejectWithValue(error);
     }
@@ -192,9 +212,8 @@ export const hazardSlice = createSlice({
     });
     builder.addCase(
       createHazardFeature.fulfilled,
-      (state, action: PayloadAction<HazardFeature>) => {
-        console.log(action.payload);
-        // state.hazardFeatures = [...state.hazardFeatures, action.payload];
+      (state, action: PayloadAction<any>) => {
+        state.hazardFeatures = [...state.hazardFeatures, action.payload];
         state.status = ApiState.fulfilled;
         state.error = undefined;
       },

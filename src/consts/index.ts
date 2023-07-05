@@ -24,7 +24,7 @@ export const mapIcons = [
   },
   { id: 'marker-grey-icon', url: markerGreyIcon, category: 'Distress' },
   { id: 'marker-blue-icon', url: markerBlueIcon, category: 'Curb Ramps' },
-  { id: 'marker-purple-icon', url: markerPurpleIcon, category: 'Driveway' },
+  { id: 'marker-purple-icon', url: markerPurpleIcon, category: 'Drive way' },
   {
     id: 'circle-green-icon',
     url: circleGreenIcon,

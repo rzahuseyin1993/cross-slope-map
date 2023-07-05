@@ -82,7 +82,7 @@ const CrossSlopeMap = () => {
     if (createToggle) return;
     setIsMouseDownClicked(false);
     if (selectFeature) {
-      if (selectFeature.layer.id.includes('hazard-')) {
+      if (selectFeature.layer.id.includes('hazard-marker-')) {
         dispatch(
           setHazardFeatures([
             ...hazardFeatures,
@@ -147,7 +147,7 @@ const CrossSlopeMap = () => {
           coordinates: [event.lngLat.lng, event.lngLat.lat],
         },
         properties: {
-          category: 'Driveway',
+          category: 'Drive way',
         },
       });
     } else {
@@ -170,7 +170,7 @@ const CrossSlopeMap = () => {
           .filter(
             item =>
               item.id.includes('cross-slope-symbol-') ||
-              item.id.includes('hazard-'),
+              item.id.includes('hazard-marker-'),
           )
           .map(item => item.id);
         const findFeatures = map.queryRenderedFeatures(event.point, {
@@ -455,7 +455,7 @@ const CrossSlopeMap = () => {
                 properties: selectFeature.properties,
               }}
             >
-              {selectFeature.layer.id.includes('hazard-') && (
+              {selectFeature.layer.id.includes('hazard-marker-') && (
                 <>
                   <Layer
                     key={`hazard-select-layer`}
