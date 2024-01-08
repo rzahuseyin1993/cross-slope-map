@@ -1,6 +1,6 @@
 import { http } from 'utils/api';
 
-export const fetchHazardDataApi = () => http.get(`/Hazard/Get`);
+export const fetchHazardDataApi = () => http.get(`/Hazard/GetRosero`);
 
 export const createHazardDataApi = (payload?: any) => {
   let formdata = new FormData();

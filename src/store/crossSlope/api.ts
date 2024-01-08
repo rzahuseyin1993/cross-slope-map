@@ -1,6 +1,6 @@
 import { http } from 'utils/api';
 
-export const fetchCrossSlopeDataApi = () => http.get(`/CrossSlope`);
+export const fetchCrossSlopeDataApi = () => http.get(`/CrossSlope/GetRosero`);
 
 export const updateCrossSlopeDataApi = (payload?: any) => {
   let formdata = new FormData();

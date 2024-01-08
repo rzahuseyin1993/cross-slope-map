@@ -245,14 +245,14 @@ const CrossSlopeMap = () => {
         <ReactMapGL
           ref={mapRef}
           initialViewState={{
-            longitude: 0,
-            latitude: 0,
-            zoom: 1,
+            longitude: -122.521003,
+            latitude: 47.6357855,
+            zoom: 8,
           }}
           style={{ width: '100%', height: '100%' }}
           mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
           mapStyle="mapbox://styles/mapbox/satellite-streets-v12"
-          projection="globe"
+          // projection="globe"
           maxZoom={20}
           attributionControl={false}
           cursor={mapCursor}
