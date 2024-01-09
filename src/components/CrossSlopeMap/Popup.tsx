@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+// import { useDispatch, useSelector } from 'react-redux';
 import { Box, Text, Image as GrommetImage, Spinner, Anchor } from 'grommet';
 import { MapboxGeoJSONFeature, Popup as MapboxPopup } from 'react-map-gl';
 
 import { BASE_URL } from 'consts';
-import { ApiState } from 'types/apiState';
-import {
-  crossSlopeSelector,
-  updateCrossSlopeFeature,
-} from 'store/crossSlope/slice';
-import { hazardSelector, updateHazardFeature } from 'store/hazard/slice';
+// import { ApiState } from 'types/apiState';
+// import {
+//   // crossSlopeSelector,
+//   updateCrossSlopeFeature,
+// } from 'store/crossSlope/slice';
+// import { hazardSelector, updateHazardFeature } from 'store/hazard/slice';
 import noImage from 'assets/images/no_image.jpg';
 
 type PopupProps = {
@@ -17,10 +17,10 @@ type PopupProps = {
   setSelectFeature: (newValue: MapboxGeoJSONFeature | null) => void;
 };
 const Popup = (props: PopupProps) => {
-  const dispatch = useDispatch<any>();
+  // const dispatch = useDispatch<any>();
   const { selectFeature, setSelectFeature } = props;
-  const { service, status } = useSelector(hazardSelector);
-  const crossSlopeStates = useSelector(crossSlopeSelector);
+  // const { service, status } = useSelector(hazardSelector);
+  // const crossSlopeStates = useSelector(crossSlopeSelector);
 
   const [isImageLoading, setIsImageLoading] = useState<boolean>(true);
 
@@ -28,34 +28,34 @@ const Popup = (props: PopupProps) => {
     window.open(`${BASE_URL}${selectFeature.properties?.pdfUrl}`, '_blank');
   };
 
-  const handleSaveChanges = () => {
-    if (selectFeature && selectFeature.layer.id.includes('hazard-')) {
-      const coords = (selectFeature.geometry as any).coordinates;
-      const props: any = selectFeature.properties;
-      const updateValues = {
-        Id: props.id,
-        Longitude: coords[0],
-        Latitude: coords[1],
-        Comment: props.comment,
-        'Category.Id': props.categoryId,
-        'HazardType.Id': props.hazardTypeId,
-      };
-      dispatch(updateHazardFeature(updateValues));
-    } else if (
-      selectFeature &&
-      selectFeature.layer.id.includes('cross-slope-symbol-')
-    ) {
-      const coords = (selectFeature.geometry as any).coordinates;
-      const props: any = selectFeature.properties;
-      const updateValues = {
-        Id: props.id,
-        Longitude: coords[0],
-        Latitude: coords[1],
-        Cross: props.cross,
-      };
-      dispatch(updateCrossSlopeFeature(updateValues));
-    }
-  };
+  // const handleSaveChanges = () => {
+  //   if (selectFeature && selectFeature.layer.id.includes('hazard-')) {
+  //     const coords = (selectFeature.geometry as any).coordinates;
+  //     const props: any = selectFeature.properties;
+  //     const updateValues = {
+  //       Id: props.id,
+  //       Longitude: coords[0],
+  //       Latitude: coords[1],
+  //       Comment: props.comment,
+  //       'Category.Id': props.categoryId,
+  //       'HazardType.Id': props.hazardTypeId,
+  //     };
+  //     dispatch(updateHazardFeature(updateValues));
+  //   } else if (
+  //     selectFeature &&
+  //     selectFeature.layer.id.includes('cross-slope-symbol-')
+  //   ) {
+  //     const coords = (selectFeature.geometry as any).coordinates;
+  //     const props: any = selectFeature.properties;
+  //     const updateValues = {
+  //       Id: props.id,
+  //       Longitude: coords[0],
+  //       Latitude: coords[1],
+  //       Cross: props.cross,
+  //     };
+  //     dispatch(updateCrossSlopeFeature(updateValues));
+  //   }
+  // };
 
   useEffect(() => {
     if (selectFeature && selectFeature.layer.id.includes('hazard-')) {
@@ -100,11 +100,11 @@ const Popup = (props: PopupProps) => {
             </Text>
           </Box>
           <Box direction="row" align="center" gap="small">
-            <Box direction="row" align="center" gap="xsmall">
+            {/* <Box direction="row" align="center" gap="xsmall">
               {crossSlopeStates.service === 'updateCrossSlopeFeature' &&
                 crossSlopeStates.status === ApiState.pending && <Spinner />}
               <Anchor label="Save Changes" onClick={handleSaveChanges} />
-            </Box>
+            </Box> */}
             <Anchor label="Close" onClick={() => setSelectFeature(null)} />
           </Box>
         </Box>
@@ -159,12 +159,12 @@ const Popup = (props: PopupProps) => {
               <Anchor label="View" onClick={handlePDFOpen} />
             )}
 
-            <Box direction="row" align="center" gap="xsmall">
+            {/* <Box direction="row" align="center" gap="xsmall">
               {service === 'updateHazardFeature' &&
                 status === ApiState.pending && <Spinner />}
 
               <Anchor label="Save Changes" onClick={handleSaveChanges} />
-            </Box>
+            </Box> */}
             <Anchor label="Close" onClick={() => setSelectFeature(null)} />
           </Box>
         </Box>

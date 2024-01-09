@@ -11,27 +11,27 @@ import ReactMapGL, {
   MapboxGeoJSONFeature,
 } from 'react-map-gl';
 import * as turf from '@turf/turf';
-import { Feature, Point } from 'geojson';
-import { mdiMapMarkerPlus } from '@mdi/js';
+// import { Feature, Point } from 'geojson';
+// import { mdiMapMarkerPlus } from '@mdi/js';
 
-import Icon from 'components/Icon';
+// import Icon from 'components/Icon';
 import { MAPBOX_ACCESS_TOKEN } from 'consts';
-import { HazardFeature } from 'types/hazard/HazardFeature';
-import { CrossSlopeFeature } from 'types/crossSlope/CrossSlopeFeature';
+// import { HazardFeature } from 'types/hazard/HazardFeature';
+// import { CrossSlopeFeature } from 'types/crossSlope/CrossSlopeFeature';
 import {
   crossSlopeSelector,
   fetchCrossSlopeFeatures,
-  setCrossSlopeFeatures,
+  // setCrossSlopeFeatures,
 } from 'store/crossSlope/slice';
 import {
   fetchHazardFeatures,
   hazardSelector,
-  setHazardFeatures,
+  // setHazardFeatures,
 } from 'store/hazard/slice';
 import { mapIcons } from 'consts';
 import Legend from './Legend';
 import Popup from './Popup';
-import EditDialog from './EditDialog';
+// import EditDialog from './EditDialog';
 
 const CrossSlopeMap = () => {
   const dispatch = useDispatch<any>();
@@ -42,123 +42,120 @@ const CrossSlopeMap = () => {
   const mapRef = useRef<MapRef>(null);
   const [mapCursor, setMapCursor] = useState<string>('');
 
-  const [isMouseDownClicked, setIsMouseDownClicked] = useState<boolean>(false);
+  // const [isMouseDownClicked, setIsMouseDownClicked] = useState<boolean>(false);
   const [selectFeature, setSelectFeature] =
     useState<MapboxGeoJSONFeature | null>(null);
-  const [createToggle, setCreateToggle] = useState<boolean>(false);
-  const [createHazardFeature, setCreateHazardFeature] =
-    useState<Feature<Point> | null>(null);
+  // const [createToggle, setCreateToggle] = useState<boolean>(false);
+  // const [createHazardFeature, setCreateHazardFeature] =
+  //   useState<Feature<Point> | null>(null);
 
-  const handleEditDialogClose = () => {
-    setCreateToggle(false);
-    setCreateHazardFeature(null);
-  };
+  // const handleEditDialogClose = () => {
+  //   setCreateToggle(false);
+  //   setCreateHazardFeature(null);
+  // };
 
-  const handleMapMouseDown = (event: MapLayerMouseEvent) => {
-    if (createToggle) return;
-    const feature = findFeature(event);
-    if (
-      feature &&
-      selectFeature &&
-      feature.properties?.id === selectFeature.properties?.id
-    ) {
-      setIsMouseDownClicked(true);
-      if (feature.layer.id.includes('hazard-marker-')) {
-        const newHazardFeatures = hazardFeatures.filter(
-          item => item.properties.id !== selectFeature.properties?.id,
-        );
-        dispatch(setHazardFeatures(newHazardFeatures));
-      } else if (feature.layer.id.includes('cross-slope-symbol-')) {
-        const newCrossSlopeFeatures = crossSlopeFeatures.filter(
-          item => item.properties.id !== selectFeature.properties?.id,
-        );
-        dispatch(setCrossSlopeFeatures(newCrossSlopeFeatures));
-      }
-      setSelectFeature(feature);
-    }
-  };
+  // const handleMapMouseDown = (event: MapLayerMouseEvent) => {
+  //   // if (createToggle) return;
+  //   const feature = findFeature(event);
+  //   if (
+  //     feature &&
+  //     selectFeature &&
+  //     feature.properties?.id === selectFeature.properties?.id
+  //   ) {
+  //     setIsMouseDownClicked(true);
+  //     if (feature.layer.id.includes('hazard-marker-')) {
+  //       const newHazardFeatures = hazardFeatures.filter(
+  //         item => item.properties.id !== selectFeature.properties?.id,
+  //       );
+  //       dispatch(setHazardFeatures(newHazardFeatures));
+  //     } else if (feature.layer.id.includes('cross-slope-symbol-')) {
+  //       const newCrossSlopeFeatures = crossSlopeFeatures.filter(
+  //         item => item.properties.id !== selectFeature.properties?.id,
+  //       );
+  //       dispatch(setCrossSlopeFeatures(newCrossSlopeFeatures));
+  //     }
+  //     setSelectFeature(feature);
+  //   }
+  // };
 
-  const handleMapMouseUp = () => {
-    if (createToggle) return;
-    setIsMouseDownClicked(false);
-    if (selectFeature) {
-      if (selectFeature.layer.id.includes('hazard-marker-')) {
-        dispatch(
-          setHazardFeatures([
-            ...hazardFeatures,
-            {
-              type: 'Feature',
-              geometry: selectFeature.geometry,
-              properties: selectFeature.properties,
-            } as HazardFeature,
-          ]),
-        );
-      } else if (selectFeature.layer.id.includes('cross-slope-symbol-')) {
-        dispatch(
-          setCrossSlopeFeatures([
-            ...crossSlopeFeatures,
-            {
-              type: 'Feature',
-              geometry: selectFeature.geometry,
-              properties: selectFeature.properties,
-            } as CrossSlopeFeature,
-          ]),
-        );
-      }
-      // setSelectFeature(null);
-    }
-  };
+  // const handleMapMouseUp = () => {
+  //   // if (createToggle) return;
+  //   setIsMouseDownClicked(false);
+  //   if (selectFeature) {
+  //     if (selectFeature.layer.id.includes('hazard-marker-')) {
+  //       dispatch(
+  //         setHazardFeatures([
+  //           ...hazardFeatures,
+  //           {
+  //             type: 'Feature',
+  //             geometry: selectFeature.geometry,
+  //             properties: selectFeature.properties,
+  //           } as HazardFeature,
+  //         ]),
+  //       );
+  //     } else if (selectFeature.layer.id.includes('cross-slope-symbol-')) {
+  //       dispatch(
+  //         setCrossSlopeFeatures([
+  //           ...crossSlopeFeatures,
+  //           {
+  //             type: 'Feature',
+  //             geometry: selectFeature.geometry,
+  //             properties: selectFeature.properties,
+  //           } as CrossSlopeFeature,
+  //         ]),
+  //       );
+  //     }
+  //     // setSelectFeature(null);
+  //   }
+  // };
 
   const handleMapMouseMove = (event: MapLayerMouseEvent) => {
-    if (createToggle) {
-      setMapCursor('crosshair');
+    // if (createToggle) {
+    //   setMapCursor('crosshair');
+    // } else {
+    // if (isMouseDownClicked && selectFeature) {
+    //   const mousePoint: [number, number] = [event.lngLat.lng, event.lngLat.lat];
+    //   const newSelectFeature = {
+    //     ...selectFeature,
+    //     geometry: {
+    //       ...selectFeature.geometry,
+    //       coordinates: mousePoint,
+    //     },
+    //   } as MapboxGeoJSONFeature;
+    //   setSelectFeature(newSelectFeature);
+    // } else {
+    const feature = findFeature(event);
+    if (feature) {
+      setMapCursor('pointer');
     } else {
-      if (isMouseDownClicked && selectFeature) {
-        const mousePoint: [number, number] = [
-          event.lngLat.lng,
-          event.lngLat.lat,
-        ];
-        const newSelectFeature = {
-          ...selectFeature,
-          geometry: {
-            ...selectFeature.geometry,
-            coordinates: mousePoint,
-          },
-        } as MapboxGeoJSONFeature;
-        setSelectFeature(newSelectFeature);
-      } else {
-        const feature = findFeature(event);
-        if (feature) {
-          setMapCursor('pointer');
-        } else {
-          setMapCursor('');
-        }
-      }
+      setMapCursor('');
     }
+    // }
+    // }
   };
 
   const handleMapClick = (event: MapLayerMouseEvent) => {
-    if (createToggle) {
-      // event.lngLat
-      setCreateHazardFeature({
-        type: 'Feature',
-        geometry: {
-          type: 'Point',
-          coordinates: [event.lngLat.lng, event.lngLat.lat],
-        },
-        properties: {
-          category: 'Drive way',
-        },
-      });
-    } else {
-      const feature = findFeature(event);
-      if (feature) {
-        setSelectFeature(null);
-        setTimeout(() => {
-          setSelectFeature(feature);
-        }, 300);
-      }
+    // if (createToggle) {
+    // event.lngLat
+    // setCreateHazardFeature({
+    //   type: 'Feature',
+    //   geometry: {
+    //     type: 'Point',
+    //     coordinates: [event.lngLat.lng, event.lngLat.lat],
+    //   },
+    //   properties: {
+    //     category: 'Drive way',
+    //   },
+    // });
+    // } else {
+    const feature = findFeature(event);
+    if (feature) {
+      setSelectFeature(null);
+      setTimeout(() => {
+        setSelectFeature(feature);
+      }, 300);
     }
+    // }
   };
 
   const findFeature = (event: MapLayerMouseEvent) => {
@@ -256,10 +253,10 @@ const CrossSlopeMap = () => {
           maxZoom={20}
           attributionControl={false}
           cursor={mapCursor}
-          dragPan={!isMouseDownClicked}
+          // dragPan={!isMouseDownClicked}
           onMouseMove={handleMapMouseMove}
-          onMouseDown={handleMapMouseDown}
-          onMouseUp={handleMapMouseUp}
+          // onMouseDown={handleMapMouseDown}
+          // onMouseUp={handleMapMouseUp}
           onClick={handleMapClick}
         >
           <Source
@@ -511,7 +508,7 @@ const CrossSlopeMap = () => {
               )}
             </Source>
           )}
-          {createHazardFeature && (
+          {/* {createHazardFeature && (
             <Source
               id="create-hazard-source"
               type="geojson"
@@ -544,7 +541,7 @@ const CrossSlopeMap = () => {
                 beforeId="gap-layer-2"
               />
             </Source>
-          )}
+          )} */}
           <NavigationControl position="top-right" />
           {selectFeature && (
             <Popup
@@ -554,7 +551,7 @@ const CrossSlopeMap = () => {
           )}
         </ReactMapGL>
       </Box>
-      {isLegendVisible && (
+      {/* {isLegendVisible && (
         <Box
           pad="xsmall"
           round="xsmall"
@@ -565,14 +562,14 @@ const CrossSlopeMap = () => {
         >
           <Icon path={mdiMapMarkerPlus} color="purple" />
         </Box>
-      )}
+      )} */}
       {isLegendVisible && <Legend />}
-      {createHazardFeature && (
+      {/* {createHazardFeature && (
         <EditDialog
           coords={createHazardFeature.geometry.coordinates as [number, number]}
           onClose={handleEditDialogClose}
         />
-      )}
+      )} */}
     </Box>
   );
 };
