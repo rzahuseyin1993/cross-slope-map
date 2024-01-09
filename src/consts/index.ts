@@ -10,7 +10,7 @@ import circleOrangeIcon from 'assets/icons/circles/orange.png';
 import circleRedIcon from 'assets/icons/circles/red.png';
 
 // export const BASE_URL = 'https://accessologydemo.cartigraph.com';
-export const BASE_URL = 'http://demo.pathfinderada.com';
+export const BASE_URL = 'https://demo.pathfinderada.com';
 
 export const MAPBOX_ACCESS_TOKEN =
   'pk.eyJ1Ijoid3d3bWFzdGVyMSIsImEiOiJjazZmbmxhYngwYjQxM2xtdDdwMjJzYjdnIn0._QtAdUTg9NtC9_R8Caq6Ng';
