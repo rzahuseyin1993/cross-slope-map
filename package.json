@@ -4,6 +4,7 @@
   "private": true,
   "homepage": ".",
   "dependencies": {
+    "@mapbox/mapbox-gl-draw": "^1.4.3",
     "@mdi/js": "^7.0.96",
     "@reduxjs/toolkit": "^1.8.5",
     "@testing-library/jest-dom": "^5.14.1",
@@ -32,7 +33,6 @@
     "redux-saga": "^1.2.1",
     "styled-components": "^5.3.5",
     "typescript": "^4.4.2",
-    "wavesurfer.js": "^6.2.0",
     "web-vitals": "^2.1.0",
     "worker-loader": "^3.0.8",
     "yup": "^0.32.11"
@@ -65,7 +65,6 @@
     "@types/geojson": "^7946.0.13",
     "@types/react-redux": "^7.1.24",
     "@types/styled-components": "^5.1.26",
-    "@types/wavesurfer.js": "^6.0.3",
     "eslint-plugin-react-hooks": "^4.6.0"
   }
 }
